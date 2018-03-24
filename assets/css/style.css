@@ -1,8 +1,31 @@
 .pre-login, .post-login, .pending-login, .selections, .pending-selection, 
-.selection-made, .selection-reveal, .stats {
+.selection-made, .selection-reveal, .stats, .chat-row {
     display: none;
 }
 
 .player {
     border:1px solid black;
+}
+
+.row {
+    margin-bottom: 20px;
+}
+
+#chat-log {
+    height: 200px;
+    overflow: scroll;
+    border: 1px solid grey;
+}
+#chat-log li{
+    padding:5px;
+}
+
+.current-user {
+    color: red;
+}
+.other-user {
+    color: blue;
+}
+.system {
+    color: grey;
 }

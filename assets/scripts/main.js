@@ -25,9 +25,11 @@ firebase.initializeApp(config);
 
 var db = firebase.database();
 var playersRef = db.ref("/players");
+var chatRef = db.ref("/chat");
 var connectedRef = db.ref(".info/connected");
 
-var player1LoggedIn = false,
+var playerName,
+    player1LoggedIn = false,
     player2LoggedIn = false,
     playerNumber,
     player1Object = {
@@ -49,7 +51,29 @@ connectedRef.on("value", function (snap) {
     if (!snap.val() && playerNumber) {
         db.ref("/players/" + playerNumber).remove();
         playerNumber = null;
+
+        // TODO: reset
     }
+}, errorHandler);
+
+// when a chat message is received, display it
+chatRef.on("child_added", function (chatSnap) {
+    var chatObj = chatSnap.val();
+    var chatLogItem = $("<li>");
+
+    if (chatObj.userId == "system") {
+        chatLogItem.addClass("system");
+    } else if (chatObj.userId == playerNumber) {
+        chatLogItem.addClass("current-user");
+    } else {
+        chatLogItem.addClass("other-user");
+    }
+
+    chatLogItem.text((chatObj.name ? chatObj.name + ": " : "") + chatObj.text);
+
+    $("#chat-log").append(chatLogItem);
+
+    $("#chat-log").scrollTop($("#chat-log")[0].scrollHeight);
 }, errorHandler);
 
 // when player is added, update respective loggedIn flag and playerObject
@@ -67,6 +91,11 @@ playersRef.on("child_changed", function (childSnap) {
 
 // when player is removed, reset respective playerObject and loggedIn flag
 playersRef.on("child_removed", function (childSnap) {
+    chatRef.push({
+        userId: "system",
+        text: childSnap.val().name + " has disconnected"
+    });
+
     this["player" + childSnap.key + "LoggedIn"] = false;
     this["player" + childSnap.key + "Object"] = {
         name: "",
@@ -74,6 +103,11 @@ playersRef.on("child_removed", function (childSnap) {
         wins: 0,
         losses: 0
     };
+
+    // when both players have left, clear the chat
+    if(!player1LoggedIn && !player2LoggedIn) {
+        chatRef.remove();
+    }
 }, errorHandler);
 
 // when general changes are made, perform bulk of game logic
@@ -115,7 +149,7 @@ $("#add-player").click(function (e) {
     }
 
     if (playerNumber) {
-        let playerName = $("#player-name").val().trim();
+        playerName = $("#player-name").val().trim();
         window["player" + playerNumber + "Object"].name = playerName;
         $("#player-name").val("");
 
@@ -135,6 +169,18 @@ $(".selection").click(function () {
 
     $(".p" + playerNumber + "-selections").hide();
     $(".p" + playerNumber + "-selection-reveal").text(this.id).show();
+});
+
+$("#send-chat").click(function (e) {
+    e.preventDefault();
+
+    chatRef.push({
+        userId: playerNumber,
+        name: playerName,
+        text: $("#chat").val().trim()
+    });
+
+    $("#chat").val("");
 });
 
 function loginPending() {

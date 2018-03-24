@@ -21,10 +21,13 @@
                 Connecting...
             </div>
             <div class="col-xs-12 pre-login">
-                <form role="form">
-                    <label for="player-name">Name:</label>
-                    <input id="player-name" class="form-control" type="text">
-                    <button class="btn btn-default" id="add-player" type="submit">Play</button>
+                <form role="login">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="player-name" placeholder="Enter your name to start...">
+                        <span class="input-group-btn">
+                            <button class="btn btn-default" id="add-player" type="submit">Login</button>
+                        </span>
+                    </div>
                 </form>
             </div>
             <div class="col-xs-12 post-login">
@@ -88,7 +91,21 @@
                 </p>
             </div>
         </div>
+        <div class="row post-login">
+            <div class="col-xs-12">
+                <ul id="chat-log" class="list-unstyled text-left">
 
+                </ul>
+                <form role="chat">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="chat">
+                        <span class="input-group-btn">
+                            <button class="btn btn-default" id="send-chat" type="submit">Send</button>
+                        </span>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
