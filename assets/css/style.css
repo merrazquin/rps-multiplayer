@@ -1,3 +1,8 @@
-.pre-login, .post-login, .pending-login, .selections, .pending-selection, .selection-made {
+.pre-login, .post-login, .pending-login, .selections, .pending-selection, 
+.selection-made, .selection-reveal, .stats {
     display: none;
+}
+
+.player {
+    border:1px solid black;
 }
