@@ -5,22 +5,52 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+    <title>Multiplayer Rock Paper Scissors</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
         crossorigin="anonymous">
-
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
 
 <body>
     <div class="container text-center">
         <div class="jumbotron">
             <h1>Rock | Paper | Scissors</h1>
+        </div>
+        <div class="row">
+            <div class="col-xs-12 pre-connection">
+                Connecting...
+            </div>
+            <div class="col-xs-12 pre-login">
+                <form role="form">
+                    <label for="player-name">Name:</label>
+                    <input id="player-name" class="form-control" type="text">
+                    <button class="btn btn-default" id="add-player" type="submit">Play</button>
+                </form>
+            </div>
+            <div class="col-xs-12 post-login">
+                Hi,
+                <span id="player-name-display"></span>! You are player
+                <span id="player-number"></span>.
+            </div>
+            <div class="col-xs-12 pending-login">
+                There are already 2 players playing, you are <span id="queue-position"></span> in the queue.
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-4 player">
+                <h2 id="player-1">Waiting for Player 1</h2>
 
-            <h2><span id="num-players"></span> connected players</h2>
+            </div>
+            <div class="col-xs-4">
+                <h2 id="feedback"></h2>
+            </div>
+            <div class="col-xs-4 player">
+                <h2 id="player-2">Waiting for Player 2</h2>
+            </div>
         </div>
 
     </div>
-    
+
     <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
         crossorigin="anonymous"></script>
     <script src="https://www.gstatic.com/firebasejs/4.12.0/firebase.js"></script>
