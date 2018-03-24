@@ -33,19 +33,41 @@
                 <span id="player-number"></span>.
             </div>
             <div class="col-xs-12 pending-login">
-                There are already 2 players playing, you are <span id="queue-position"></span> in the queue.
+                There are already 2 players playing, you are
+                <span id="queue-position"></span> in the queue.
             </div>
         </div>
         <div class="row">
             <div class="col-xs-4 player">
                 <h2 id="player-1">Waiting for Player 1</h2>
-
+                <p class="selections p1-selections">
+                    <button id="rock" data-player="1" class="btn btn-default selection">Rock</button>
+                    <button id="paper" data-player="1" class="btn btn-default selection">Paper</button>
+                    <button id="scissors" data-player="1" class="btn btn-default selection">Scissors</button>
+                </p>
+                <p class="pending-selection p1-pending-selection">
+                    Pending Selection
+                </p>
+                <p class="selection-made p1-selection-made">
+                    Selection Made.
+                </p>
             </div>
             <div class="col-xs-4">
                 <h2 id="feedback"></h2>
             </div>
             <div class="col-xs-4 player">
                 <h2 id="player-2">Waiting for Player 2</h2>
+                <p class="selections p2-selections">
+                    <button id="rock" data-player="2" class="btn btn-default selection">Rock</button>
+                    <button id="paper" data-player="2" class="btn btn-default selection">Paper</button>
+                    <button id="scissors" data-player="2" class="btn btn-default selection">Scissors</button>
+                </p>
+                <p class="pending-selection p2-pending-selection">
+                    Pending Selection
+                </p>
+                <p class="selection-made p2-selection-made">
+                    Selection Made.
+                </p>
             </div>
         </div>
 

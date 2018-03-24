@@ -25,6 +25,7 @@ firebase.initializeApp(config);
 
 var db = firebase.database();
 var playersRef = db.ref("/players");
+var connectedRef = db.ref(".info/connected");
 
 
 const MAX_PLAYERS = 2;
@@ -39,24 +40,35 @@ var numPlayers,
         losses: 0
     };
 
+connectedRef.on("value", function (snap) {
+    if (!snap.val() && playerNumber) {
+        playersRef.ref("/players/" + playerNumber).remove();
+        playerNumber = null;
+    }
+}, function (error) { cosole.log("error", error.code); });
+
 playersRef.on("value", function (snap) {
     console.log("playersRef");
     console.log(snap.val());
     numPlayers = snap.numChildren();
-    /*if (!snap.child("1").exists()) {
-        playerNumber = "1";
-    } else if (!snap.child("2").exists()) {
-        playerNumber = "2";
-    } else {
-        playerNumber = null;
-
-        loginPending();
-    }*/
-
 
     if (snap.child("1").exists()) {
         player1LoggedIn = true;
         $("#player-1").text(snap.child("1").val().name);
+
+        if (playerNumber != "1") {
+            if (snap.child("1").val().choice) {
+                $(".p1-selection-made").show();
+                $(".p1-pending-selection").hide();
+            } else {
+                $(".p1-selection-made").hide();
+                $(".p1-pending-selection").show();
+            }
+        } else if (playerNumber == "1") {
+            if (snap.child("1").val().choice) {
+                // show selection
+            }
+        }
     } else {
         player1LoggedIn = false;
         $("#player-1").text("Waiting for Player 1");
@@ -64,6 +76,15 @@ playersRef.on("value", function (snap) {
     if (snap.child("2").exists()) {
         player2LoggedIn = true;
         $("#player-2").text(snap.child("2").val().name);
+        if (playerNumber != "2") {
+            if (snap.child("2").val().choice) {
+                $(".p2-selection-made").show();
+                $(".p2-pending-selection").hide();
+            } else {
+                $(".p2-selection-made").hide();
+                $(".p2-pending-selection").show();
+            }
+        }
     } else {
         player2LoggedIn = false;
         $("#player-2").text("Waiting for Player 2");
@@ -76,6 +97,8 @@ playersRef.on("value", function (snap) {
     } else {
         showLoginScreen();
     }
+}, function (error) {
+    console.log("Error", error.code);
 });
 
 
@@ -101,16 +124,36 @@ $("#add-player").click(function (e) {
     }
 });
 
+$(".selection").click(function () {
+    if (!playerNumber) return;
+
+    playerObject.choice = this.id;
+    db.ref("/players/" + playerNumber).set(playerObject);
+    $(".selection").addClass("disabled");
+    this.addClass("active");
+
+});
+
 function loginPending() {
-    $(".pre-connection, .pre-login, .post-login").hide();
+    $(".pre-connection, .pre-login, .post-login, .selections").hide();
     $(".pending-login").show();
 }
 function showLoginScreen() {
-    $(".pre-connection, .pending-login, .post-login").hide();
+    $(".pre-connection, .pending-login, .post-login, .selections").hide();
     $(".pre-login").show();
 }
 
 function showLoggedInScreen() {
     $(".pre-connection, .pre-login, .pending-login").hide();
     $(".post-login").show();
+    if (playerNumber == "1") {
+        $(".p1-selections").show();
+    } else {
+        $(".p1-selections").hide();
+    }
+    if (playerNumber == "2") {
+        $(".p2-selections").show();
+    } else {
+        $(".p2-selections").hide();
+    }
 }
