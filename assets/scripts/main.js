@@ -52,9 +52,12 @@ playersRef.on("value", function (snap) {
     console.log(snap.val());
     numPlayers = snap.numChildren();
 
+    let p1choice, p2choice;
+
     if (snap.child("1").exists()) {
         player1LoggedIn = true;
         $("#player-1").text(snap.child("1").val().name);
+        p1choice = snap.child("1").val().choice;
 
         if (playerNumber != "1") {
             if (snap.child("1").val().choice) {
@@ -76,6 +79,8 @@ playersRef.on("value", function (snap) {
     if (snap.child("2").exists()) {
         player2LoggedIn = true;
         $("#player-2").text(snap.child("2").val().name);
+        p2choice = snap.child("2").val().choice;
+
         if (playerNumber != "2") {
             if (snap.child("2").val().choice) {
                 $(".p2-selection-made").show();
@@ -96,6 +101,10 @@ playersRef.on("value", function (snap) {
         showLoggedInScreen();
     } else {
         showLoginScreen();
+    }
+
+    if(p1choice && p2choice) {
+        rps(p1choice, p2choice);
     }
 }, function (error) {
     console.log("Error", error.code);
@@ -155,5 +164,19 @@ function showLoggedInScreen() {
         $(".p2-selections").show();
     } else {
         $(".p2-selections").hide();
+    }
+}
+
+function rps(p1choice, p2choice) {
+    if(p1choice == p2choice) {
+        //tie
+        $("#feedback").text("TIE");
+    }
+    else if((p1choice == "rock" && p2choice == "scissors") || (p1choice == "paper" && p2choice == "rock") || (p1choice == "scissors" && p2choice == "paper")) {
+        // p1 wins
+        $("#feedback").text("P1 wins");
+    } else {
+        // p2 wins
+        $("#feedback").text("P2 wins");
     }
 }
