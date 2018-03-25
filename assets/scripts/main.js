@@ -11,6 +11,8 @@ The game will track each player's wins and losses.
 Users can chat with each other
 */
 
+//#region Firebase init and vars
+
 // Initialize Firebase
 var config = {
     apiKey: "AIzaSyB36zKLMLt3n5QT9I1KPmciKQ12d1CQ5KY",
@@ -23,15 +25,18 @@ var config = {
 
 firebase.initializeApp(config);
 
+// database connection references
 var db = firebase.database();
 var playersRef = db.ref("/players");
 var chatRef = db.ref("/chat");
 var connectedRef = db.ref(".info/connected");
 
+// global vars to keep track of all player data locally
 var playerName,
     player1LoggedIn = false,
     player2LoggedIn = false,
     playerNumber,
+    playerObject,
     player1Object = {
         name: "",
         choice: "",
@@ -45,6 +50,9 @@ var playerName,
         losses: 0
     },
     resetId;
+//#endregion
+
+//#region Database functions
 
 // handle lost connection
 connectedRef.on("value", function (snap) {
@@ -52,15 +60,18 @@ connectedRef.on("value", function (snap) {
         db.ref("/players/" + playerNumber).remove();
         playerNumber = null;
 
-        // TODO: reset
+        // reset screen
+        showLoginScreen();
     }
 }, errorHandler);
 
-// when a chat message is received, display it
+// when a chat message is received, add it to the DOM
 chatRef.on("child_added", function (chatSnap) {
-    var chatObj = chatSnap.val();
-    var chatLogItem = $("<li>");
+    let chatObj = chatSnap.val();
+    let chatText = chatObj.text;
+    let chatLogItem = $("<li>").attr("id", chatSnap.key);
 
+    // style the message based on who sent it
     if (chatObj.userId == "system") {
         chatLogItem.addClass("system");
     } else if (chatObj.userId == playerNumber) {
@@ -69,22 +80,33 @@ chatRef.on("child_added", function (chatSnap) {
         chatLogItem.addClass("other-user");
     }
 
-    chatLogItem.text((chatObj.name ? chatObj.name + ": " : "") + chatObj.text);
+    // if a username exist, prepend it to teh chat text
+    if (chatObj.name) {
+        chatText = "<strong>" + chatObj.name + ":</strong> " + chatText;
+    }
+
+    chatLogItem.html(chatText);
 
     $("#chat-log").append(chatLogItem);
 
+    // scroll to the bottom 
     $("#chat-log").scrollTop($("#chat-log")[0].scrollHeight);
+}, errorHandler);
+
+// if a chat message is removed, remove it from the DOM
+chatRef.on("child_removed", function (chatSnap) {
+    $("#" + chatSnap.key).remove();
 }, errorHandler);
 
 // when player is added, update respective loggedIn flag and playerObject
 playersRef.on("child_added", function (childSnap) {
-    this["player" + childSnap.key + "LoggedIn"] = true;
-    this["player" + childSnap.key + "Object"] = childSnap.val();
+    window["player" + childSnap.key + "LoggedIn"] = true;
+    window["player" + childSnap.key + "Object"] = childSnap.val();
 }, errorHandler);
 
 // when player is changed, update respective playerObject and stats
 playersRef.on("child_changed", function (childSnap) {
-    this["player" + childSnap.key + "Object"] = childSnap.val();
+    window["player" + childSnap.key + "Object"] = childSnap.val();
 
     updateStats();
 }, errorHandler);
@@ -96,8 +118,8 @@ playersRef.on("child_removed", function (childSnap) {
         text: childSnap.val().name + " has disconnected"
     });
 
-    this["player" + childSnap.key + "LoggedIn"] = false;
-    this["player" + childSnap.key + "Object"] = {
+    window["player" + childSnap.key + "LoggedIn"] = false;
+    window["player" + childSnap.key + "Object"] = {
         name: "",
         choice: "",
         wins: 0,
@@ -105,20 +127,20 @@ playersRef.on("child_removed", function (childSnap) {
     };
 
     // when both players have left, clear the chat
-    if(!player1LoggedIn && !player2LoggedIn) {
+    if (!player1LoggedIn && !player2LoggedIn) {
         chatRef.remove();
     }
 }, errorHandler);
 
 // when general changes are made, perform bulk of game logic
 playersRef.on("value", function (snap) {
+    // update the player names
     $("#player-1").text(player1Object.name || "Waiting for Player 1");
     $("#player-2").text(player2Object.name || "Waiting for Player 2");
 
+    // update which part of the player box is showing based on whether a selection has been made
     updatePlayerBox("1", snap.child("1").exists(), snap.child("1").exists() && snap.child("1").val().choice);
     updatePlayerBox("2", snap.child("2").exists(), snap.child("2").exists() && snap.child("2").val().choice);
-
-    updateStats();
 
     // display correct "screen" depending on logged in statuses
     if (player1LoggedIn && player2LoggedIn && !playerNumber) {
@@ -136,41 +158,55 @@ playersRef.on("value", function (snap) {
 
 }, errorHandler);
 
+//#endregion
 
-$("#add-player").click(function (e) {
+//#region Click listeners 
+
+// when the login button is clicked, add the new player to the open player slot
+$("#login").click(function (e) {
     e.preventDefault();
 
+    // check to see which player slot is available
     if (!player1LoggedIn) {
         playerNumber = "1";
-    } else if (!player2LoggedIn) {
+        playerObject = player1Object;
+    }
+    else if (!player2LoggedIn) {
         playerNumber = "2";
-    } else {
+        playerObject = player2Object;
+    }
+    else {
         playerNumber = null;
+        playerObject = null;
     }
 
+    // if a slot was found, update it with the new information
     if (playerNumber) {
         playerName = $("#player-name").val().trim();
-        window["player" + playerNumber + "Object"].name = playerName;
+        playerObject.name = playerName;
         $("#player-name").val("");
 
         $("#player-name-display").text(playerName);
         $("#player-number").text(playerNumber);
 
-        db.ref("/players/" + playerNumber).set(window["player" + playerNumber + "Object"]);
+        db.ref("/players/" + playerNumber).set(playerObject);
         db.ref("/players/" + playerNumber).onDisconnect().remove();
     }
 });
 
+// when a selection is made, send it to the database
 $(".selection").click(function () {
+    // failsafe for if the player isn't logged in
     if (!playerNumber) return;
 
-    window["player" + playerNumber + "Object"].choice = this.id;
-    db.ref("/players/" + playerNumber).set(window["player" + playerNumber + "Object"]);
+    playerObject.choice = this.id;
+    db.ref("/players/" + playerNumber).set(playerObject);
 
     $(".p" + playerNumber + "-selections").hide();
     $(".p" + playerNumber + "-selection-reveal").text(this.id).show();
 });
 
+// when the send-chat button is clicked, send the message to the database
 $("#send-chat").click(function (e) {
     e.preventDefault();
 
@@ -183,35 +219,15 @@ $("#send-chat").click(function (e) {
     $("#chat").val("");
 });
 
-function loginPending() {
-    $(".pre-connection, .pre-login, .post-login, .selections").hide();
-    $(".pending-login").show();
-}
-function showLoginScreen() {
-    $(".pre-connection, .pending-login, .post-login, .selections").hide();
-    $(".pre-login").show();
-}
+//#endregion
 
-function showLoggedInScreen() {
-    $(".pre-connection, .pre-login, .pending-login").hide();
-    $(".post-login").show();
-    if (playerNumber == "1") {
-        $(".p1-selections").show();
-    } else {
-        $(".p1-selections").hide();
-    }
-    if (playerNumber == "2") {
-        $(".p2-selections").show();
-    } else {
-        $(".p2-selections").hide();
-    }
-}
+//#region Game functions
 
-function showSelections() {
-    $(".selections, .pending-selection, .selection-made").hide();
-    $(".selection-reveal").show();
-}
-
+/**
+ * Compares 2 choices and determines a tie or winner
+ * @param {string} p1choice rock, paper, scissors
+ * @param {string} p2choice rock, paper, scissors
+ */
 function rps(p1choice, p2choice) {
     $(".p1-selection-reveal").text(p1choice);
     $(".p2-selection-reveal").text(p2choice);
@@ -224,34 +240,44 @@ function rps(p1choice, p2choice) {
     }
     else if ((p1choice == "rock" && p2choice == "scissors") || (p1choice == "paper" && p2choice == "rock") || (p1choice == "scissors" && p2choice == "paper")) {
         // p1 wins
-        $("#feedback").text("P1 wins");
-        player1Object.wins++;
-        player2Object.losses++;
+        $("#feedback").html("<small>" + p1choice + " beats " + p2choice + "</small><br/><br/>" + player1Object.name + " wins!");
+
+        if (playerNumber == "1") {
+            playerObject.wins++;
+        } else {
+            playerObject.losses++;
+        }
     } else {
         // p2 wins
-        $("#feedback").text("P2 wins");
-        player2Object.wins++;
-        player1Object.losses++;
-    }
-    updateStats();
+        $("#feedback").html("<small>" + p2choice + " beats " + p1choice + "</small><br/><br/>" + player2Object.name + " wins!");
 
-    resetId = setTimeout(reset, 2000);
+        if (playerNumber == "2") {
+            playerObject.wins++;
+        } else {
+            playerObject.losses++;
+        }
+    }
+
+    resetId = setTimeout(reset, 3000);
 }
 
+/**
+ * Reset the round
+ */
 function reset() {
     clearTimeout(resetId);
 
-    player1Object.choice = "";
-    player2Object.choice = "";
+    playerObject.choice = "";
 
-    db.ref("/players").set({
-        1: player1Object,
-        2: player2Object
-    });
+    db.ref("/players/" + playerNumber).set(playerObject);
+
     $(".selection-reveal").hide();
     $("#feedback").empty();
 }
 
+/**
+ * Update stats for both players based off most recently-pulled data
+ */
 function updateStats() {
     ["1", "2"].forEach(playerNum => {
         var obj = window["player" + playerNum + "Object"];
@@ -289,3 +315,39 @@ function updatePlayerBox(playerNum, exists, choice) {
 function errorHandler(error) {
     console.log("Error:", error.code);
 }
+
+//#endregion
+
+//#region Display functions
+
+function loginPending() {
+    $(".pre-connection, .pre-login, .post-login, .selections").hide();
+    $(".pending-login").show();
+}
+
+function showLoginScreen() {
+    $(".pre-connection, .pending-login, .post-login, .selections").hide();
+    $(".pre-login").show();
+}
+
+function showLoggedInScreen() {
+    $(".pre-connection, .pre-login, .pending-login").hide();
+    $(".post-login").show();
+    if (playerNumber == "1") {
+        $(".p1-selections").show();
+    } else {
+        $(".p1-selections").hide();
+    }
+    if (playerNumber == "2") {
+        $(".p2-selections").show();
+    } else {
+        $(".p2-selections").hide();
+    }
+}
+
+function showSelections() {
+    $(".selections, .pending-selection, .selection-made").hide();
+    $(".selection-reveal").show();
+}
+
+//#endregion

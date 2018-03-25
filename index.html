@@ -25,24 +25,30 @@
                     <div class="input-group">
                         <input type="text" class="form-control" id="player-name" placeholder="Enter your name to start...">
                         <span class="input-group-btn">
-                            <button class="btn btn-default" id="add-player" type="submit">Login</button>
+                            <button class="btn btn-default" id="login" type="submit">Login</button>
                         </span>
                     </div>
                 </form>
             </div>
             <div class="col-xs-12 post-login">
-                Hi,
-                <span id="player-name-display"></span>! You are player
-                <span id="player-number"></span>.
+                <h2>Hi,
+                    <span id="player-name-display"></span>! You are player
+                    <span id="player-number"></span>.
+                </h2>
             </div>
             <div class="col-xs-12 pending-login">
-                There are already 2 players playing, you are
-                <span id="queue-position"></span> in the queue.
+                There are already 2 players playing, you can play when one player quits.
             </div>
         </div>
         <div class="row">
             <div class="col-xs-4 player">
-                <h2 id="player-1">Waiting for Player 1</h2>
+                <h3 id="player-1">Waiting for Player 1</h3>
+                <p class="stats p1-stats">
+                    <strong>Wins:</strong>
+                    <span id="p1-wins">0</span>
+                    <strong>Losses:</strong>
+                    <span id="p1-losses"></span>
+                </p>
                 <p class="selections p1-selections">
                     <button id="rock" data-player="1" class="btn btn-default selection">Rock</button>
                     <button id="paper" data-player="1" class="btn btn-default selection">Paper</button>
@@ -57,18 +63,18 @@
                 <p class="selection-reveal p1-selection-reveal">
 
                 </p>
-                <p class="stats p1-stats">
-                    Wins:
-                    <span id="p1-wins">0</span>
-                    Losses:
-                    <span id="p1-losses"></span>
-                </p>
             </div>
             <div class="col-xs-4">
                 <h3 id="feedback"></h3>
             </div>
             <div class="col-xs-4 player">
-                <h2 id="player-2">Waiting for Player 2</h2>
+                <h3 id="player-2">Waiting for Player 2</h3>
+                <p class="stats p2-stats">
+                    <strong>Wins:</strong>
+                    <span id="p2-wins">0</span>
+                    <strong>Losses:</strong>
+                    <span id="p2-losses"></span>
+                </p>
                 <p class="selections p2-selections">
                     <button id="rock" data-player="2" class="btn btn-default selection">Rock</button>
                     <button id="paper" data-player="2" class="btn btn-default selection">Paper</button>
@@ -83,27 +89,23 @@
                 <p class="selection-reveal p2-selection-reveal">
 
                 </p>
-                <p class="stats p2-stats">
-                    Wins:
-                    <span id="p2-wins">0</span>
-                    Losses:
-                    <span id="p2-losses"></span>
-                </p>
             </div>
         </div>
         <div class="row post-login">
             <div class="col-xs-12">
-                <ul id="chat-log" class="list-unstyled text-left">
+                <div class="panel panel-default">
+                    <ul id="chat-log" class="list-unstyled text-left">
 
-                </ul>
-                <form role="chat">
-                    <div class="input-group">
-                        <input type="text" class="form-control" id="chat">
-                        <span class="input-group-btn">
-                            <button class="btn btn-default" id="send-chat" type="submit">Send</button>
-                        </span>
-                    </div>
-                </form>
+                    </ul>
+                    <form role="chat" class="panel-footer">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="chat">
+                            <span class="input-group-btn">
+                                <button class="btn btn-default" id="send-chat" type="submit">Send</button>
+                            </span>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
