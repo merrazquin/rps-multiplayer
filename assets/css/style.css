@@ -26,6 +26,7 @@ form[role=login] {
 
 #chat-log li {
     padding: 5px;
+    margin-left: 10px;
 }
 
 .current-user {
