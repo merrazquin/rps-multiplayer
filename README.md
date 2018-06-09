@@ -1,6 +1,6 @@
 # Multiplayer Rock, Paper, Scissors
 ## Overview
-Two players can play while specators wait for their turn to play.
+Two players can play while spectators wait for their turn to play.
 
 ### [Demo](https://merrazquin.github.io/rps-multiplayer/)
 
@@ -14,4 +14,3 @@ Two players can play while specators wait for their turn to play.
 * HTML5
 * CSS3
 * JQuery
-* Giphy API
